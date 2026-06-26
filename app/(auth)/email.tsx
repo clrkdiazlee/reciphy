@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 
 import { Button } from "../../src/components/ui/Button";
@@ -9,46 +9,73 @@ import { Input } from "../../src/components/ui/Input";
 import { Text } from "../../src/components/ui/Text";
 import { useAuth } from "../../src/features/auth/hooks/useAuth";
 import {
-  signUpSchema,
-  type SignUpFormValues,
+  signInSchema,
+  type SignInFormValues,
 } from "../../src/features/auth/schemas/auth.schema";
 
-export default function RegisterScreen() {
-  const { signUpWithEmail } = useAuth();
+export default function EmailLoginScreen() {
+  const { registered } = useLocalSearchParams<{ registered?: string }>();
+  const { signInWithEmail, requestPasswordReset } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+
+  useEffect(() => {
+    if (registered === "1") {
+      setStatusMessage(
+        "Account created. Check your email to confirm your address, then sign in."
+      );
+    }
+  }, [registered]);
 
   const {
     control,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
-  } = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema),
+  } = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
-  async function onSubmit(values: SignUpFormValues) {
+  async function onSubmit(values: SignInFormValues) {
     setFormError(null);
+    setStatusMessage(null);
 
-    const result = await signUpWithEmail(values);
+    const result = await signInWithEmail(values);
 
     if (!result.success) {
       setFormError(result.message);
       return;
     }
 
-    if (result.autoSignedIn) {
-      router.replace("/(tabs)");
+    router.replace("/(tabs)");
+  }
+
+  async function handleForgotPassword() {
+    const email = getValues("email").trim();
+
+    if (!email) {
+      setFormError("Enter your email above, then tap Forgot password.");
       return;
     }
 
-    router.replace({
-      pathname: "/(auth)/email",
-      params: { registered: "1" },
-    });
+    setFormError(null);
+    setStatusMessage(null);
+    setIsResettingPassword(true);
+
+    const result = await requestPasswordReset(email);
+    setIsResettingPassword(false);
+
+    if (!result.success) {
+      setFormError(result.message);
+      return;
+    }
+
+    setStatusMessage(result.message);
   }
 
   return (
@@ -67,10 +94,10 @@ export default function RegisterScreen() {
         <View className="mx-auto w-full max-w-[340px] gap-8">
           <View className="gap-2">
             <Text className="font-fredoka-bold text-4xl text-primary">
-              Create account
+              Welcome back
             </Text>
             <Text className="font-nunito text-base text-[#949494]">
-              Join ReciPHy with your email and a secure password.
+              Sign in with your email and password.
             </Text>
           </View>
 
@@ -101,11 +128,11 @@ export default function RegisterScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
                   label="Password"
-                  placeholder="At least 8 characters"
+                  placeholder="Your password"
                   secureTextEntry
                   autoCapitalize="none"
-                  autoComplete="new-password"
-                  textContentType="newPassword"
+                  autoComplete="password"
+                  textContentType="password"
                   value={value}
                   onBlur={onBlur}
                   onChangeText={onChange}
@@ -114,43 +141,38 @@ export default function RegisterScreen() {
               )}
             />
 
-            <Controller
-              control={control}
-              name="confirmPassword"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label="Confirm password"
-                  placeholder="Re-enter your password"
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoComplete="new-password"
-                  textContentType="newPassword"
-                  value={value}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  error={errors.confirmPassword?.message}
-                />
-              )}
-            />
+            <Pressable
+              onPress={handleForgotPassword}
+              disabled={isResettingPassword}
+              className="self-end"
+            >
+              <Text className="font-nunito-semibold text-sm text-primary">
+                {isResettingPassword ? "Sending reset link..." : "Forgot password?"}
+              </Text>
+            </Pressable>
           </View>
 
           {formError ? (
             <Text className="font-nunito text-sm text-red-500">{formError}</Text>
           ) : null}
 
+          {statusMessage ? (
+            <Text className="font-nunito text-sm text-accent">{statusMessage}</Text>
+          ) : null}
+
           <Button
-            title="Create account"
+            title="Sign in"
             loading={isSubmitting}
             onPress={handleSubmit(onSubmit)}
           />
 
           <View className="flex-row justify-center gap-1">
             <Text className="font-nunito text-[#949494]">
-              Already have an account?
+              Don&apos;t have an account?
             </Text>
-            <Link href="/(auth)/email" asChild>
+            <Link href="/(auth)/register" asChild>
               <Pressable>
-                <Text className="font-nunito-bold text-primary">Sign in</Text>
+                <Text className="font-nunito-bold text-primary">Sign up</Text>
               </Pressable>
             </Link>
           </View>

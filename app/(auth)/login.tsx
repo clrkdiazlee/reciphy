@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { router } from "expo-router";
 import { Text } from "../../src/components/ui/Text";
 import { AuthButton } from "../../src/components/ui/AuthButton";
 
@@ -43,6 +44,7 @@ export default function LoginScreen() {
             backgroundColor="#FFFFFF"
             borderColor="#F97316"
             textColor="#F97316"
+            onPress={() => router.push("/(auth)/email")}
           />
         </View>
       </View>
