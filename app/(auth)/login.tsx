@@ -5,7 +5,7 @@ import { AuthButton } from "../../src/components/ui/AuthButton";
 
 export default function LoginScreen() {
   return (
-    <View className="bg-background flex-1 items-center justify-center gap-12">
+    <View className="flex-1 items-center justify-center gap-12">
       <Text className="text-5xl text-primary font-fredoka-bold">
         ReciPHy
       </Text>
