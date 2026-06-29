@@ -4,6 +4,7 @@ import { useFonts } from "expo-font";
 
 import {
   Fredoka_400Regular,
+  Fredoka_500Medium,
   Fredoka_600SemiBold,
   Fredoka_700Bold,
 } from "@expo-google-fonts/fredoka";
@@ -17,6 +18,7 @@ import {
 import { Stack } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
+import { BACKGROUND_COLOR } from "../src/constants/layout";
 import { useAuth } from "../src/features/auth/hooks/useAuth";
 import { useAuthStore } from "../src/store/auth.store";
 
@@ -32,7 +34,14 @@ function RootNavigator() {
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: BACKGROUND_COLOR },
+      }}
+    />
+  );
 }
 
 export default function RootLayout() {
@@ -43,6 +52,7 @@ export default function RootLayout() {
     Nunito_700Bold,
 
     Fredoka_400Regular,
+    Fredoka_500Medium,
     Fredoka_600SemiBold,
     Fredoka_700Bold,
   });

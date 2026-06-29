@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
+import { ScrollView } from "../../src/components/ui/ScrollView";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
@@ -80,11 +81,11 @@ export default function EmailLoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-background"
+      className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
-        contentContainerClassName="flex-grow px-6 py-12"
+        contentContainerClassName="flex-grow py-12"
         keyboardShouldPersistTaps="handled"
       >
         <Pressable onPress={() => router.back()} className="mb-8 self-start">
